@@ -38,7 +38,6 @@ fun CombinedChart(
     if (entries.isEmpty() || activeTypes.isEmpty()) return
 
     val sortedEntries = remember(entries) { entries.sortedBy { it.date } }
-    val modelProducer = remember { CartesianChartModelProducer() }
 
     val typesWithData = remember(sortedEntries, activeTypes, displayMode) {
         activeTypes.filter { type ->
@@ -49,6 +48,8 @@ fun CombinedChart(
             }
         }.sortedBy { it.sortOrder }
     }
+
+    val modelProducer = remember(typesWithData) { CartesianChartModelProducer() }
 
     val lineColors = remember(typesWithData, isDarkTheme) {
         typesWithData.map { it.chartColor(isDarkTheme) }
