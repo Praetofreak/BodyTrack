@@ -10,3 +10,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Release build artifacts
+/app/release/
+
+# Root-level exported assets
+/icon.png
+
+# Claude Code local settings
+/.claude/settings.local.json

@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.project.myscale"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.project.myscale"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 37
         versionCode = 2
         versionName = "1.0.1"
 
@@ -36,10 +36,10 @@ android {
         compose = true
         buildConfig = true
     }
+}
 
-    room {
-        schemaDirectory("$projectDir/schemas")
-    }
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {
