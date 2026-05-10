@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -49,7 +50,33 @@ fun CombinedChart(
         }.sortedBy { it.sortOrder }
     }
 
-    val modelProducer = remember(typesWithData) { CartesianChartModelProducer() }
+    if (typesWithData.isEmpty()) return
+
+    // Wrap the chart in a key block so the entire Vico chart subtree is fully
+    // recreated whenever the set of visible types or the entry set changes.
+    // This avoids any inconsistency between the chart's line configuration and
+    // the underlying CartesianChartModelProducer when the user switches time
+    // ranges (which previously caused IndexOutOfBoundsException crashes).
+    key(typesWithData, sortedEntries, displayMode, isDarkTheme) {
+        CombinedChartContent(
+            sortedEntries = sortedEntries,
+            typesWithData = typesWithData,
+            displayMode = displayMode,
+            isDarkTheme = isDarkTheme,
+            modifier = modifier
+        )
+    }
+}
+
+@Composable
+private fun CombinedChartContent(
+    sortedEntries: List<BodyEntry>,
+    typesWithData: List<MeasurementType>,
+    displayMode: InputMode,
+    isDarkTheme: Boolean,
+    modifier: Modifier
+) {
+    val modelProducer = remember { CartesianChartModelProducer() }
 
     val lineColors = remember(typesWithData, isDarkTheme) {
         typesWithData.map { it.chartColor(isDarkTheme) }
@@ -60,7 +87,7 @@ fun CombinedChart(
         sortedEntries.mapIndexed { index, entry -> index to entry.date.format(formatter) }.toMap()
     }
 
-    LaunchedEffect(sortedEntries, typesWithData, displayMode) {
+    LaunchedEffect(Unit) {
         if (typesWithData.isEmpty() || sortedEntries.isEmpty()) return@LaunchedEffect
 
         modelProducer.runTransaction {
@@ -80,10 +107,10 @@ fun CombinedChart(
         }
     }
 
-    if (typesWithData.isEmpty()) return
-
     val lines = lineColors.map { color ->
-        LineCartesianLayer.rememberLine(fill = remember(color) { LineCartesianLayer.LineFill.single(fill(color)) })
+        LineCartesianLayer.rememberLine(
+            fill = remember(color) { LineCartesianLayer.LineFill.single(fill(color)) }
+        )
     }
 
     val bottomFormatter = CartesianValueFormatter { _, x, _ ->
