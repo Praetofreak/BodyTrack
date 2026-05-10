@@ -16,10 +16,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
@@ -37,6 +39,7 @@ import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 import com.project.myscale.data.model.BodyEntry
 import com.project.myscale.data.model.InputMode
 import com.project.myscale.data.model.MeasurementType
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -50,7 +53,6 @@ fun SingleValueChart(
 ) {
     val sortedEntries = remember(entries) { entries.sortedBy { it.date } }
     val chartColor = type.chartColor(isDarkTheme)
-    val modelProducer = remember { CartesianChartModelProducer() }
 
     val dataPoints = remember(sortedEntries, type, displayMode) {
         sortedEntries.mapNotNull { entry ->
@@ -63,12 +65,37 @@ fun SingleValueChart(
         }
     }
 
+    if (dataPoints.isEmpty()) return
+
+    // Wrap the chart in a key block so the entire Vico chart subtree is fully
+    // recreated whenever the data points or display mode change. This prevents
+    // crashes when switching time ranges where the model producer would
+    // otherwise hold stale data inconsistent with the new chart configuration.
+    key(dataPoints, displayMode, type, isDarkTheme) {
+        SingleValueChartContent(
+            type = type,
+            chartColor = chartColor,
+            dataPoints = dataPoints,
+            modifier = modifier
+        )
+    }
+}
+
+@Composable
+private fun SingleValueChartContent(
+    type: MeasurementType,
+    chartColor: Color,
+    dataPoints: List<Pair<LocalDate, Double>>,
+    modifier: Modifier
+) {
+    val modelProducer = remember { CartesianChartModelProducer() }
+
     val dateLabels = remember(dataPoints) {
         val formatter = DateTimeFormatter.ofPattern("d. MMM", Locale.GERMAN)
         dataPoints.mapIndexed { index, (date, _) -> index to date.format(formatter) }.toMap()
     }
 
-    LaunchedEffect(dataPoints) {
+    LaunchedEffect(Unit) {
         if (dataPoints.isEmpty()) return@LaunchedEffect
         modelProducer.runTransaction {
             lineSeries {
@@ -76,8 +103,6 @@ fun SingleValueChart(
             }
         }
     }
-
-    if (dataPoints.isEmpty()) return
 
     Card(
         modifier = modifier.fillMaxWidth(),
