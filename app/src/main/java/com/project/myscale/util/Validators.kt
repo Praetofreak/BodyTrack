@@ -1,84 +1,80 @@
 package com.project.myscale.util
 
+import java.util.Locale
+
 object Validators {
+
+    /** Language-neutral validation outcomes; the UI maps them to string resources. */
+    enum class ValidationError {
+        WEIGHT_REQUIRED,
+        INVALID_NUMBER,
+        WEIGHT_OUT_OF_RANGE,
+        VALUE_NOT_POSITIVE,
+        EXCEEDS_TOTAL_WEIGHT,
+        PERCENT_OUT_OF_RANGE
+    }
 
     data class ValidationResult(
         val isValid: Boolean,
-        val errorMessage: String? = null,
-        val warningMessage: String? = null
+        val error: ValidationError? = null
     )
 
     fun validateWeight(input: String): ValidationResult {
         if (input.isBlank()) {
-            return ValidationResult(false, "Gewicht ist ein Pflichtfeld")
+            return ValidationResult(false, ValidationError.WEIGHT_REQUIRED)
         }
-        val value = parseDecimalInput(input) ?: return ValidationResult(false, "Ungültige Eingabe")
+        val value = parseDecimalInput(input)
+            ?: return ValidationResult(false, ValidationError.INVALID_NUMBER)
         if (value < 20.0 || value > 350.0) {
-            return ValidationResult(false, "Gewicht muss zwischen 20 und 350 kg liegen")
+            return ValidationResult(false, ValidationError.WEIGHT_OUT_OF_RANGE)
         }
         return ValidationResult(true)
     }
 
     fun validateOptionalKg(input: String, weightKg: Double?): ValidationResult {
         if (input.isBlank()) return ValidationResult(true) // optional field
-        val value = parseDecimalInput(input) ?: return ValidationResult(false, "Ungültige Eingabe")
+        val value = parseDecimalInput(input)
+            ?: return ValidationResult(false, ValidationError.INVALID_NUMBER)
         if (value <= 0) {
-            return ValidationResult(false, "Wert muss größer als 0 sein")
+            return ValidationResult(false, ValidationError.VALUE_NOT_POSITIVE)
         }
         if (weightKg != null && value > weightKg) {
-            return ValidationResult(false, "Darf nicht mehr als das Gesamtgewicht sein")
+            return ValidationResult(false, ValidationError.EXCEEDS_TOTAL_WEIGHT)
         }
         return ValidationResult(true)
     }
 
     fun validateOptionalPercent(input: String): ValidationResult {
         if (input.isBlank()) return ValidationResult(true) // optional field
-        val value = parseDecimalInput(input) ?: return ValidationResult(false, "Ungültige Eingabe")
+        val value = parseDecimalInput(input)
+            ?: return ValidationResult(false, ValidationError.INVALID_NUMBER)
         if (value < 0.1 || value > 100.0) {
-            return ValidationResult(false, "Bitte einen Wert zwischen 0.1% und 100% eingeben")
+            return ValidationResult(false, ValidationError.PERCENT_OUT_OF_RANGE)
         }
         return ValidationResult(true)
     }
 
-    fun checkWeightDeviation(newWeight: Double, lastWeight: Double?): String? {
-        if (lastWeight == null) return null
-        val diff = kotlin.math.abs(newWeight - lastWeight)
-        if (diff > 5.0) {
-            return "Große Abweichung zum letzten Eintrag. Stimmt der Wert?"
-        }
-        return null
+    /** True when the new weight deviates suspiciously (> 5 kg) from the previous one. */
+    fun isLargeWeightDeviation(newWeight: Double, lastWeight: Double?): Boolean {
+        if (lastWeight == null) return false
+        return kotlin.math.abs(newWeight - lastWeight) > 5.0
     }
 
-    fun checkPercentSum(percentValues: List<Double>): String? {
-        val sum = percentValues.sum()
-        if (sum > 100.0) {
-            return "Die Summe der Anteile übersteigt 100%"
-        }
-        return null
+    /** True when the percent shares add up to more than 100 %. */
+    fun exceedsPercentSum(percentValues: List<Double>): Boolean {
+        return percentValues.sum() > 100.0
     }
 
     fun parseDecimalInput(input: String): Double? {
         if (input.isBlank()) return null
-        val normalized = input.replace(',', '.')
-        return try {
-            val value = normalized.toDouble()
-            // Enforce max 1 decimal place
-            val parts = normalized.split('.')
-            if (parts.size > 1 && parts[1].length > 1) {
-                null
-            } else {
-                value
-            }
-        } catch (_: NumberFormatException) {
-            null
-        }
+        val normalized = input.trim().replace(',', '.')
+        val value = normalized.toDoubleOrNull() ?: return null
+        // Enforce max 1 decimal place
+        val parts = normalized.split('.')
+        return if (parts.size > 1 && parts[1].length > 1) null else value
     }
 
-    fun formatDecimalInput(value: Double): String {
-        return if (value == value.toLong().toDouble()) {
-            value.toLong().toString()
-        } else {
-            String.format("%.1f", value)
-        }
+    fun formatDecimalInput(value: Double, locale: Locale = Locale.getDefault()): String {
+        return Formatters.number(value, locale)
     }
 }

@@ -25,13 +25,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.project.myscale.R
 import com.project.myscale.data.model.DevelopmentSummary
 import com.project.myscale.data.model.Trend
 import com.project.myscale.ui.screens.chart.TimeRange
 import com.project.myscale.ui.theme.TrendNegative
 import com.project.myscale.ui.theme.TrendNeutral
 import com.project.myscale.ui.theme.TrendPositive
+import com.project.myscale.util.Formatters
 
 @Composable
 fun DevelopmentSummarySection(
@@ -43,17 +46,19 @@ fun DevelopmentSummarySection(
     if (summaries.isEmpty()) return
 
     Column(modifier = modifier.fillMaxWidth()) {
-        val timeRangeLabel = when (timeRange) {
-            TimeRange.ONE_WEEK -> "1 Woche"
-            TimeRange.ONE_MONTH -> "1 Monat"
-            TimeRange.THREE_MONTHS -> "3 Monate"
-            TimeRange.SIX_MONTHS -> "6 Monate"
-            TimeRange.ONE_YEAR -> "1 Jahr"
-            TimeRange.ALL -> "Gesamt"
-        }
+        val timeRangeLabel = stringResource(
+            when (timeRange) {
+                TimeRange.ONE_WEEK -> R.string.range_one_week
+                TimeRange.ONE_MONTH -> R.string.range_one_month
+                TimeRange.THREE_MONTHS -> R.string.range_three_months
+                TimeRange.SIX_MONTHS -> R.string.range_six_months
+                TimeRange.ONE_YEAR -> R.string.range_one_year
+                TimeRange.ALL -> R.string.range_total
+            }
+        )
 
         Text(
-            text = "Entwicklung ($timeRangeLabel)",
+            text = stringResource(R.string.development_title, timeRangeLabel),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
@@ -110,7 +115,7 @@ private fun DevelopmentRow(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = summary.type.labelDe,
+                    text = stringResource(summary.type.labelRes),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -118,11 +123,11 @@ private fun DevelopmentRow(
             if (summary.hasSingleDataPoint) {
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = formatValue(summary.endValue, summary.unit),
+                        text = Formatters.valueWithUnit(summary.endValue, summary.unit),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "Nur ein Messwert",
+                        text = stringResource(R.string.development_single_value),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -131,11 +136,11 @@ private fun DevelopmentRow(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = "${formatValue(summary.startValue, summary.unit)} → ${formatValue(summary.endValue, summary.unit)}",
+                            text = "${Formatters.valueWithUnit(summary.startValue, summary.unit)} → ${Formatters.valueWithUnit(summary.endValue, summary.unit)}",
                             style = MaterialTheme.typography.bodySmall
                         )
                         Text(
-                            text = "${formatChange(summary.absoluteChange, summary.unit)} (${formatPercent(summary.percentChange)})",
+                            text = "${Formatters.signedWithUnit(summary.absoluteChange, summary.unit)} (${Formatters.signedPercent(summary.percentChange)})",
                             style = MaterialTheme.typography.bodySmall,
                             color = trendColor
                         )
@@ -151,28 +156,4 @@ private fun DevelopmentRow(
             }
         }
     }
-}
-
-private fun formatValue(value: Double, unit: String): String {
-    val formatted = if (value == value.toLong().toDouble()) {
-        value.toLong().toString()
-    } else {
-        String.format("%.1f", value)
-    }
-    return "$formatted $unit"
-}
-
-private fun formatChange(value: Double, unit: String): String {
-    val sign = if (value >= 0) "+" else ""
-    val formatted = if (value == value.toLong().toDouble()) {
-        value.toLong().toString()
-    } else {
-        String.format("%.1f", value)
-    }
-    return "$sign$formatted $unit"
-}
-
-private fun formatPercent(value: Double): String {
-    val sign = if (value >= 0) "+" else ""
-    return "$sign${String.format("%.1f", value)}%"
 }

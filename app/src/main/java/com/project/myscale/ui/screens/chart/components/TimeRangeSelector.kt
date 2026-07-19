@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.project.myscale.ui.screens.chart.TimeRange
 
@@ -31,7 +32,7 @@ fun TimeRangeSelector(
             FilterChip(
                 selected = range == selectedRange,
                 onClick = { onRangeSelected(range) },
-                label = { Text(range.label) },
+                label = { Text(stringResource(range.labelRes)) },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primary,
                     selectedLabelColor = MaterialTheme.colorScheme.onPrimary

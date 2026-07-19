@@ -7,12 +7,13 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.project.myscale.data.local.database.entity.EntryEntity
+import com.project.myscale.data.local.database.entity.EntryWithValues
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EntryDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(entry: EntryEntity): Long
 
     @Update
@@ -21,33 +22,37 @@ interface EntryDao {
     @Query("DELETE FROM entries WHERE id = :id")
     suspend fun deleteById(id: Long)
 
+    @Query("SELECT * FROM entries WHERE date = :epochDay LIMIT 1")
+    suspend fun getByDate(epochDay: Long): EntryEntity?
+
+    @Transaction
     @Query("SELECT * FROM entries WHERE id = :id")
-    suspend fun getById(id: Long): EntryEntity?
+    suspend fun getWithValuesById(id: Long): EntryWithValues?
 
-    @Query("SELECT * FROM entries WHERE date = :date LIMIT 1")
-    suspend fun getByDate(date: Long): EntryEntity?
+    @Transaction
+    @Query("SELECT * FROM entries WHERE date = :epochDay LIMIT 1")
+    suspend fun getWithValuesByDate(epochDay: Long): EntryWithValues?
 
-    @Query("SELECT * FROM entries ORDER BY date DESC")
-    fun getAllEntriesFlow(): Flow<List<EntryEntity>>
-
-    @Query("SELECT * FROM entries WHERE date >= :startDate ORDER BY date DESC")
-    fun getEntriesFromDate(startDate: Long): Flow<List<EntryEntity>>
-
-    @Query("SELECT * FROM entries WHERE date >= :startDate AND date <= :endDate ORDER BY date DESC")
-    fun getEntriesInRange(startDate: Long, endDate: Long): Flow<List<EntryEntity>>
-
+    @Transaction
     @Query("SELECT * FROM entries ORDER BY date DESC LIMIT 1")
-    suspend fun getLatestEntry(): EntryEntity?
+    suspend fun getLatestWithValues(): EntryWithValues?
 
+    @Transaction
+    @Query("SELECT * FROM entries WHERE date < :epochDay ORDER BY date DESC LIMIT 1")
+    suspend fun getWithValuesBefore(epochDay: Long): EntryWithValues?
+
+    @Transaction
+    @Query("SELECT * FROM entries ORDER BY date DESC")
+    fun getAllWithValuesDescFlow(): Flow<List<EntryWithValues>>
+
+    @Transaction
     @Query("SELECT * FROM entries ORDER BY date ASC")
-    fun getAllEntriesAscFlow(): Flow<List<EntryEntity>>
+    fun getAllWithValuesAscFlow(): Flow<List<EntryWithValues>>
 
+    @Transaction
     @Query("SELECT * FROM entries ORDER BY date ASC")
-    suspend fun getAllEntriesAsc(): List<EntryEntity>
+    suspend fun getAllWithValuesAsc(): List<EntryWithValues>
 
-    @Query("SELECT COUNT(*) FROM entries")
-    fun getEntryCount(): Flow<Int>
-
-    @Query("SELECT DISTINCT type FROM measurement_values")
-    fun getDistinctMeasurementTypes(): Flow<List<String>>
+    @Query("SELECT date FROM entries")
+    suspend fun getAllDates(): List<Long>
 }

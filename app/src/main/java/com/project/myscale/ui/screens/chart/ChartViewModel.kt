@@ -1,9 +1,11 @@
 package com.project.myscale.ui.screens.chart
 
 import android.app.Application
+import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.project.myscale.BodyTrackApplication
+import com.project.myscale.R
 import com.project.myscale.data.model.BodyEntry
 import com.project.myscale.data.model.DevelopmentSummary
 import com.project.myscale.data.model.InputMode
@@ -18,13 +20,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-enum class TimeRange(val label: String, val months: Int?) {
-    ONE_WEEK("1W", null),
-    ONE_MONTH("1M", 1),
-    THREE_MONTHS("3M", 3),
-    SIX_MONTHS("6M", 6),
-    ONE_YEAR("1J", 12),
-    ALL("Alles", null);
+enum class TimeRange(@param:StringRes val labelRes: Int) {
+    ONE_WEEK(R.string.range_one_week_short),
+    ONE_MONTH(R.string.range_one_month_short),
+    THREE_MONTHS(R.string.range_three_months_short),
+    SIX_MONTHS(R.string.range_six_months_short),
+    ONE_YEAR(R.string.range_one_year_short),
+    ALL(R.string.range_all);
 
     fun getStartDate(): LocalDate? {
         return when (this) {

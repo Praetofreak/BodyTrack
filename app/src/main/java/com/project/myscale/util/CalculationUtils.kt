@@ -63,12 +63,4 @@ object CalculationUtils {
         }
     }
 
-    fun formatValue(value: Double, unit: String): String {
-        val formatted = if (value == value.toLong().toDouble()) {
-            value.toLong().toString()
-        } else {
-            String.format("%.1f", value)
-        }
-        return "$formatted $unit"
-    }
 }

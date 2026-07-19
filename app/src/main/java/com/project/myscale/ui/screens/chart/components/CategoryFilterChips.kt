@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.project.myscale.data.model.MeasurementType
 import com.project.myscale.data.model.InputMode
@@ -57,7 +58,7 @@ fun CategoryFilterChips(
                                 .clip(CircleShape)
                                 .background(chipColor)
                         )
-                        Text(type.labelDe)
+                        Text(stringResource(type.labelRes))
                     }
                 },
                 colors = FilterChipDefaults.filterChipColors(

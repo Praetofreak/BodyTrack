@@ -29,7 +29,7 @@ data class HistoryUiState(
 
 sealed class HistoryEvent {
     data class EntryDeleted(val entry: BodyEntry) : HistoryEvent()
-    data class Error(val message: String) : HistoryEvent()
+    data class Error(val detail: String?) : HistoryEvent()
 }
 
 class HistoryViewModel(application: Application) : AndroidViewModel(application) {
@@ -100,7 +100,7 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.value = _uiState.value.copy(showDeleteDialog = false, entryToDelete = null)
                 _events.emit(HistoryEvent.EntryDeleted(entry))
             } catch (e: Exception) {
-                _events.emit(HistoryEvent.Error("Fehler beim Löschen: ${e.message}"))
+                _events.emit(HistoryEvent.Error(e.message))
             }
         }
     }
@@ -112,7 +112,7 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
                 repository.restoreEntry(entry)
                 lastDeletedEntry = null
             } catch (e: Exception) {
-                _events.emit(HistoryEvent.Error("Fehler beim Wiederherstellen: ${e.message}"))
+                _events.emit(HistoryEvent.Error(e.message))
             }
         }
     }

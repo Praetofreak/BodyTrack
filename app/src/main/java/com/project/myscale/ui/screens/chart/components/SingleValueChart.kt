@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
@@ -39,9 +40,7 @@ import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 import com.project.myscale.data.model.BodyEntry
 import com.project.myscale.data.model.InputMode
 import com.project.myscale.data.model.MeasurementType
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import com.project.myscale.util.DateUtils
 
 @Composable
 fun SingleValueChart(
@@ -51,27 +50,24 @@ fun SingleValueChart(
     isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val sortedEntries = remember(entries) { entries.sortedBy { it.date } }
     val chartColor = type.chartColor(isDarkTheme)
 
-    val dataPoints = remember(sortedEntries, type, displayMode) {
-        sortedEntries.mapNotNull { entry ->
+    val dataPoints = remember(entries, type, displayMode) {
+        entries.sortedBy { it.date }.mapNotNull { entry ->
             val value = entry.measurements[type] ?: return@mapNotNull null
             val displayValue = when {
                 displayMode == InputMode.PERCENT && type.supportsPercent -> value.valuePercent
                 else -> value.valueKg
             } ?: return@mapNotNull null
-            entry.date to displayValue
+            DateUtils.localDateToEpochDay(entry.date) to displayValue
         }
     }
 
     if (dataPoints.isEmpty()) return
 
-    // Wrap the chart in a key block so the entire Vico chart subtree is fully
-    // recreated whenever the data points or display mode change. This prevents
-    // crashes when switching time ranges where the model producer would
-    // otherwise hold stale data inconsistent with the new chart configuration.
-    key(dataPoints, displayMode, type, isDarkTheme) {
+    // Recreate the Vico subtree when the data changes so the model producer can
+    // never hold data inconsistent with the chart configuration (crash fix).
+    key(dataPoints, type, isDarkTheme) {
         SingleValueChartContent(
             type = type,
             chartColor = chartColor,
@@ -85,21 +81,15 @@ fun SingleValueChart(
 private fun SingleValueChartContent(
     type: MeasurementType,
     chartColor: Color,
-    dataPoints: List<Pair<LocalDate, Double>>,
+    dataPoints: List<Pair<Long, Double>>,
     modifier: Modifier
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
 
-    val dateLabels = remember(dataPoints) {
-        val formatter = DateTimeFormatter.ofPattern("d. MMM", Locale.GERMAN)
-        dataPoints.mapIndexed { index, (date, _) -> index to date.format(formatter) }.toMap()
-    }
-
     LaunchedEffect(Unit) {
-        if (dataPoints.isEmpty()) return@LaunchedEffect
         modelProducer.runTransaction {
             lineSeries {
-                series(dataPoints.map { it.second })
+                series(x = dataPoints.map { it.first }, y = dataPoints.map { it.second })
             }
         }
     }
@@ -121,13 +111,15 @@ private fun SingleValueChartContent(
                         .background(chartColor)
                 )
                 Text(
-                    text = type.labelDe,
+                    text = stringResource(type.labelRes),
                     style = MaterialTheme.typography.titleMedium
                 )
             }
 
-            val bottomFormatter = CartesianValueFormatter { _, x, _ ->
-                dateLabels[x.toInt()] ?: ""
+            val bottomFormatter = remember {
+                CartesianValueFormatter { _, x, _ ->
+                    DateUtils.formatChartDate(DateUtils.epochDayToLocalDate(x.toLong()))
+                }
             }
 
             val line = LineCartesianLayer.rememberLine(

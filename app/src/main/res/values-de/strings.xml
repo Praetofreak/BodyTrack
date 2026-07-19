@@ -1,0 +1,147 @@
+<resources>
+    <!-- Measurement types -->
+    <string name="measurement_weight">Gewicht</string>
+    <string name="measurement_body_fat">Körperfett</string>
+    <string name="measurement_water">Wasseranteil</string>
+    <string name="measurement_muscle">Muskelanteil</string>
+    <string name="measurement_bone_mass">Knochenmasse</string>
+
+    <!-- Navigation -->
+    <string name="nav_input">Eintrag</string>
+    <string name="nav_chart">Verlauf</string>
+    <string name="nav_history">Historie</string>
+
+    <!-- Common actions -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="action_delete">Löschen</string>
+    <string name="action_back">Zurück</string>
+    <string name="action_undo">Rückgängig</string>
+    <string name="action_merge">Zusammenführen</string>
+    <string name="action_import">Importieren</string>
+    <string name="action_save_entry">Eintrag speichern</string>
+    <string name="action_save_changes">Änderungen speichern</string>
+    <string name="action_delete_entry">Eintrag löschen</string>
+    <string name="action_export_csv">Daten exportieren (CSV)</string>
+    <string name="action_import_csv">Daten importieren (CSV)</string>
+
+    <!-- Validation -->
+    <string name="error_weight_required">Gewicht ist ein Pflichtfeld</string>
+    <string name="error_invalid_number">Ungültige Eingabe</string>
+    <string name="error_weight_out_of_range">Gewicht muss zwischen 20 und 350 kg liegen</string>
+    <string name="error_value_not_positive">Wert muss größer als 0 sein</string>
+    <string name="error_exceeds_total_weight">Darf nicht mehr als das Gesamtgewicht sein</string>
+    <string name="error_percent_out_of_range" formatted="false">Bitte einen Wert zwischen 0,1% und 100% eingeben</string>
+    <string name="warning_weight_deviation">Große Abweichung zum letzten Eintrag. Stimmt der Wert?</string>
+    <string name="warning_percent_sum" formatted="false">Die Summe der Anteile übersteigt 100%</string>
+
+    <!-- Input screen -->
+    <string name="input_enable_more_fields">Du kannst in den Einstellungen weitere Messwerte aktivieren →</string>
+    <string name="input_editing_existing_entry">Für dieses Datum existiert bereits ein Eintrag. Die Werte wurden geladen — Speichern aktualisiert ihn.</string>
+    <string name="save_success">Eintrag für %1$s gespeichert</string>
+    <string name="error_saving">Fehler beim Speichern: %1$s</string>
+    <string name="error_generic">Etwas ist schiefgelaufen: %1$s</string>
+
+    <!-- Date picker -->
+    <string name="date_label">Datum</string>
+    <string name="date_pick">Datum wählen</string>
+
+    <!-- Delete dialog -->
+    <string name="delete_entry_title">Eintrag löschen</string>
+    <string name="delete_entry_message">Eintrag vom %1$s wirklich löschen?</string>
+    <string name="entry_deleted">Eintrag gelöscht</string>
+
+    <!-- Merge dialog -->
+    <string name="merge_dialog_title">Einträge zusammenführen</string>
+    <string name="merge_dialog_message">Für den %1$s existiert bereits ein Eintrag. Werte, die nur in einem Eintrag vorhanden sind, werden automatisch übernommen.</string>
+    <string name="merge_dialog_choose_values">Wähle bei den folgenden Werten aus, welcher behalten wird:</string>
+    <string name="merge_option_edited">Bearbeiteter Eintrag</string>
+    <string name="merge_option_existing">Bestehender Eintrag</string>
+
+    <!-- Edit screen -->
+    <string name="edit_entry_title">Eintrag bearbeiten</string>
+
+    <!-- Time ranges -->
+    <string name="range_one_week_short">1W</string>
+    <string name="range_one_month_short">1M</string>
+    <string name="range_three_months_short">3M</string>
+    <string name="range_six_months_short">6M</string>
+    <string name="range_one_year_short">1J</string>
+    <string name="range_all">Alles</string>
+    <string name="range_one_week">1 Woche</string>
+    <string name="range_one_month">1 Monat</string>
+    <string name="range_three_months">3 Monate</string>
+    <string name="range_six_months">6 Monate</string>
+    <string name="range_one_year">1 Jahr</string>
+    <string name="range_total">Gesamt</string>
+
+    <!-- Chart screen -->
+    <string name="chart_empty_state">Noch keine Daten vorhanden.\nErstelle zuerst einen Eintrag.</string>
+    <string name="chart_mode_combined">Gesamt</string>
+    <string name="chart_mode_individual">Einzeln</string>
+    <string name="chart_no_data_in_range">Keine Daten in diesem Zeitraum</string>
+    <string name="development_title">Entwicklung (%1$s)</string>
+    <string name="development_single_value">Nur ein Messwert</string>
+
+    <!-- History screen -->
+    <string name="history_empty_state">Noch keine Einträge vorhanden</string>
+    <string name="history_create_first_entry">Ersten Eintrag erstellen</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_input_fields">Eingabefelder</string>
+    <string name="settings_input_fields_desc">Wähle aus, welche Messwerte du erfassen möchtest. Gewicht ist immer aktiv.</string>
+    <string name="settings_required_field">Pflichtfeld</string>
+    <string name="settings_default_unit">Standard-Einheit für neue Eingaben</string>
+    <string name="unit_percent_full" formatted="false">Prozent (%)</string>
+    <string name="unit_kg_full">Kilogramm (kg)</string>
+    <string name="settings_appearance">Erscheinungsbild</string>
+    <string name="settings_theme_selected">Ausgewählt</string>
+    <string name="settings_language">Sprache</string>
+    <string name="language_system">Systemsprache</string>
+    <string name="settings_data">Daten</string>
+    <string name="export_success">Daten exportiert</string>
+    <string name="export_failed">Export fehlgeschlagen: %1$s</string>
+    <string name="import_failed">Import fehlgeschlagen: %1$s</string>
+    <string name="import_dialog_title">CSV importieren</string>
+    <string name="import_dialog_summary">%1$d neue Einträge, %2$d Konflikte mit bestehenden Einträgen.</string>
+    <string name="import_conflict_question">Was soll mit den Konflikt-Daten passieren?</string>
+    <string name="import_keep_existing">Bestehende Einträge behalten</string>
+    <string name="import_overwrite">Importierte Einträge übernehmen</string>
+    <string name="import_finished">Import abgeschlossen: %1$d neu, %2$d überschrieben, %3$d übersprungen.</string>
+    <string name="import_finished_errors">%1$d Zeilen konnten nicht gelesen werden.</string>
+    <string name="import_errors_title">%1$d fehlerhafte Zeilen:</string>
+    <string name="import_error_line">Zeile %1$d: %2$s</string>
+    <string name="import_error_invalid_format">ungültiges Format</string>
+    <string name="import_error_invalid_date">ungültiges Datum</string>
+    <string name="import_error_missing_weight">kein Gewicht angegeben</string>
+    <string name="settings_backup">Lokales Backup</string>
+    <string name="settings_backup_desc">Speichert automatisch ein CSV-Backup in einen Ordner deiner Wahl — auch in auf dem Gerät synchronisierte Cloud-Ordner (z. B. Nextcloud, Drive, Dropbox).</string>
+    <string name="backup_choose_folder">Backup-Ordner wählen</string>
+    <string name="backup_folder_current">Ordner: %1$s</string>
+    <string name="backup_folder_none">Kein Ordner ausgewählt</string>
+    <string name="backup_interval_label">Automatisches Backup</string>
+    <string name="backup_interval_off">Aus</string>
+    <string name="backup_interval_daily">Täglich</string>
+    <string name="backup_interval_weekly">Wöchentlich</string>
+    <string name="backup_interval_monthly">Monatlich</string>
+    <string name="backup_now">Jetzt sichern</string>
+    <string name="backup_success">Backup gespeichert</string>
+    <string name="backup_not_configured">Bitte zuerst einen Backup-Ordner wählen</string>
+    <string name="backup_folder_inaccessible">Backup-Ordner ist nicht mehr erreichbar — bitte neu auswählen</string>
+    <string name="backup_failed">Backup fehlgeschlagen</string>
+    <string name="settings_info">Info</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_show_onboarding">Einführung erneut anzeigen</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Willkommen bei DailyScale</string>
+    <string name="onboarding_desc_1">Verfolge dein Gewicht und deine Körperwerte einfach und übersichtlich.</string>
+    <string name="onboarding_title_2">Deine Fortschritte im Blick</string>
+    <string name="onboarding_desc_2">Sieh deine Entwicklung als Diagramm. Wechsle zwischen Gesamtübersicht und Einzelansichten.</string>
+    <string name="onboarding_title_3">Personalisiere deine App</string>
+    <string name="onboarding_desc_3">Wähle in den Einstellungen aus, welche Messwerte du erfassen möchtest, und passe das Farbthema an.</string>
+    <string name="onboarding_skip">Überspringen</string>
+    <string name="onboarding_next">Weiter</string>
+    <string name="onboarding_start">Los geht\'s!</string>
+</resources>

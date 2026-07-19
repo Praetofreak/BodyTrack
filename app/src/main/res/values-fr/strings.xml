@@ -1,0 +1,147 @@
+<resources>
+    <!-- Measurement types -->
+    <string name="measurement_weight">Poids</string>
+    <string name="measurement_body_fat">Masse grasse</string>
+    <string name="measurement_water">Eau corporelle</string>
+    <string name="measurement_muscle">Masse musculaire</string>
+    <string name="measurement_bone_mass">Masse osseuse</string>
+
+    <!-- Navigation -->
+    <string name="nav_input">Saisie</string>
+    <string name="nav_chart">Évolution</string>
+    <string name="nav_history">Historique</string>
+
+    <!-- Common actions -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Annuler</string>
+    <string name="action_delete">Supprimer</string>
+    <string name="action_back">Retour</string>
+    <string name="action_undo">Annuler</string>
+    <string name="action_merge">Fusionner</string>
+    <string name="action_import">Importer</string>
+    <string name="action_save_entry">Enregistrer</string>
+    <string name="action_save_changes">Enregistrer les modifications</string>
+    <string name="action_delete_entry">Supprimer l\'entrée</string>
+    <string name="action_export_csv">Exporter les données (CSV)</string>
+    <string name="action_import_csv">Importer des données (CSV)</string>
+
+    <!-- Validation -->
+    <string name="error_weight_required">Le poids est obligatoire</string>
+    <string name="error_invalid_number">Saisie invalide</string>
+    <string name="error_weight_out_of_range">Le poids doit être compris entre 20 et 350 kg</string>
+    <string name="error_value_not_positive">La valeur doit être supérieure à 0</string>
+    <string name="error_exceeds_total_weight">Ne peut pas dépasser le poids total</string>
+    <string name="error_percent_out_of_range" formatted="false">Veuillez saisir une valeur entre 0,1 % et 100 %</string>
+    <string name="warning_weight_deviation">Grand écart par rapport à la dernière entrée. La valeur est-elle correcte ?</string>
+    <string name="warning_percent_sum" formatted="false">La somme des proportions dépasse 100 %</string>
+
+    <!-- Input screen -->
+    <string name="input_enable_more_fields">Vous pouvez activer d\'autres mesures dans les réglages →</string>
+    <string name="input_editing_existing_entry">Une entrée existe déjà pour cette date. Ses valeurs ont été chargées — l\'enregistrement la mettra à jour.</string>
+    <string name="save_success">Entrée du %1$s enregistrée</string>
+    <string name="error_saving">Échec de l\'enregistrement : %1$s</string>
+    <string name="error_generic">Une erreur est survenue : %1$s</string>
+
+    <!-- Date picker -->
+    <string name="date_label">Date</string>
+    <string name="date_pick">Choisir une date</string>
+
+    <!-- Delete dialog -->
+    <string name="delete_entry_title">Supprimer l\'entrée</string>
+    <string name="delete_entry_message">Vraiment supprimer l\'entrée du %1$s ?</string>
+    <string name="entry_deleted">Entrée supprimée</string>
+
+    <!-- Merge dialog -->
+    <string name="merge_dialog_title">Fusionner les entrées</string>
+    <string name="merge_dialog_message">Une entrée existe déjà pour le %1$s. Les valeurs présentes dans une seule entrée sont conservées automatiquement.</string>
+    <string name="merge_dialog_choose_values">Pour les valeurs suivantes, choisissez laquelle conserver :</string>
+    <string name="merge_option_edited">Entrée modifiée</string>
+    <string name="merge_option_existing">Entrée existante</string>
+
+    <!-- Edit screen -->
+    <string name="edit_entry_title">Modifier l\'entrée</string>
+
+    <!-- Time ranges -->
+    <string name="range_one_week_short">1S</string>
+    <string name="range_one_month_short">1M</string>
+    <string name="range_three_months_short">3M</string>
+    <string name="range_six_months_short">6M</string>
+    <string name="range_one_year_short">1A</string>
+    <string name="range_all">Tout</string>
+    <string name="range_one_week">1 semaine</string>
+    <string name="range_one_month">1 mois</string>
+    <string name="range_three_months">3 mois</string>
+    <string name="range_six_months">6 mois</string>
+    <string name="range_one_year">1 an</string>
+    <string name="range_total">Total</string>
+
+    <!-- Chart screen -->
+    <string name="chart_empty_state">Pas encore de données.\nCréez d\'abord une entrée.</string>
+    <string name="chart_mode_combined">Ensemble</string>
+    <string name="chart_mode_individual">Individuel</string>
+    <string name="chart_no_data_in_range">Aucune donnée sur cette période</string>
+    <string name="development_title">Évolution (%1$s)</string>
+    <string name="development_single_value">Une seule mesure</string>
+
+    <!-- History screen -->
+    <string name="history_empty_state">Pas encore d\'entrées</string>
+    <string name="history_create_first_entry">Créer la première entrée</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Réglages</string>
+    <string name="settings_input_fields">Champs de saisie</string>
+    <string name="settings_input_fields_desc">Choisissez les mesures que vous souhaitez suivre. Le poids est toujours actif.</string>
+    <string name="settings_required_field">Champ obligatoire</string>
+    <string name="settings_default_unit">Unité par défaut pour les nouvelles saisies</string>
+    <string name="unit_percent_full" formatted="false">Pourcentage (%)</string>
+    <string name="unit_kg_full">Kilogrammes (kg)</string>
+    <string name="settings_appearance">Apparence</string>
+    <string name="settings_theme_selected">Sélectionné</string>
+    <string name="settings_language">Langue</string>
+    <string name="language_system">Langue du système</string>
+    <string name="settings_data">Données</string>
+    <string name="export_success">Données exportées</string>
+    <string name="export_failed">Échec de l\'export : %1$s</string>
+    <string name="import_failed">Échec de l\'import : %1$s</string>
+    <string name="import_dialog_title">Importer un CSV</string>
+    <string name="import_dialog_summary">%1$d nouvelles entrées, %2$d conflits avec des entrées existantes.</string>
+    <string name="import_conflict_question">Que faire pour les dates en conflit ?</string>
+    <string name="import_keep_existing">Conserver les entrées existantes</string>
+    <string name="import_overwrite">Utiliser les entrées importées</string>
+    <string name="import_finished">Import terminé : %1$d ajoutées, %2$d remplacées, %3$d ignorées.</string>
+    <string name="import_finished_errors">%1$d lignes n\'ont pas pu être lues.</string>
+    <string name="import_errors_title">%1$d lignes en erreur :</string>
+    <string name="import_error_line">Ligne %1$d : %2$s</string>
+    <string name="import_error_invalid_format">format invalide</string>
+    <string name="import_error_invalid_date">date invalide</string>
+    <string name="import_error_missing_weight">poids manquant</string>
+    <string name="settings_backup">Sauvegarde locale</string>
+    <string name="settings_backup_desc">Enregistre automatiquement une sauvegarde CSV dans le dossier de votre choix — y compris les dossiers cloud synchronisés sur l\'appareil (Nextcloud, Drive, Dropbox…).</string>
+    <string name="backup_choose_folder">Choisir le dossier de sauvegarde</string>
+    <string name="backup_folder_current">Dossier : %1$s</string>
+    <string name="backup_folder_none">Aucun dossier sélectionné</string>
+    <string name="backup_interval_label">Sauvegarde automatique</string>
+    <string name="backup_interval_off">Désactivée</string>
+    <string name="backup_interval_daily">Quotidienne</string>
+    <string name="backup_interval_weekly">Hebdomadaire</string>
+    <string name="backup_interval_monthly">Mensuelle</string>
+    <string name="backup_now">Sauvegarder maintenant</string>
+    <string name="backup_success">Sauvegarde enregistrée</string>
+    <string name="backup_not_configured">Choisissez d\'abord un dossier de sauvegarde</string>
+    <string name="backup_folder_inaccessible">Le dossier de sauvegarde n\'est plus accessible — veuillez le sélectionner à nouveau</string>
+    <string name="backup_failed">Échec de la sauvegarde</string>
+    <string name="settings_info">À propos</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_show_onboarding">Revoir l\'introduction</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Bienvenue dans DailyScale</string>
+    <string name="onboarding_desc_1">Suivez votre poids et vos mesures corporelles simplement et clairement.</string>
+    <string name="onboarding_title_2">Vos progrès en un coup d\'œil</string>
+    <string name="onboarding_desc_2">Visualisez votre évolution sous forme de graphique. Passez de la vue d\'ensemble aux vues individuelles.</string>
+    <string name="onboarding_title_3">Personnalisez votre application</string>
+    <string name="onboarding_desc_3">Choisissez dans les réglages les mesures à suivre et personnalisez le thème de couleurs.</string>
+    <string name="onboarding_skip">Passer</string>
+    <string name="onboarding_next">Suivant</string>
+    <string name="onboarding_start">C\'est parti !</string>
+</resources>

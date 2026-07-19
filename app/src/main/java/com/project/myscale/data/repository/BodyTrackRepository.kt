@@ -1,10 +1,9 @@
 package com.project.myscale.data.repository
 
-import com.project.myscale.data.local.database.dao.EntryDao
-import com.project.myscale.data.local.database.dao.MeasurementValueDao
+import androidx.room.withTransaction
+import com.project.myscale.data.local.database.BodyTrackDatabase
 import com.project.myscale.data.local.database.entity.EntryEntity
 import com.project.myscale.data.model.BodyEntry
-import com.project.myscale.data.model.InputMode
 import com.project.myscale.data.model.MeasurementType
 import com.project.myscale.data.model.MeasurementValue
 import com.project.myscale.util.CalculationUtils
@@ -12,159 +11,173 @@ import com.project.myscale.util.Converters
 import com.project.myscale.util.DateUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.combine
 import java.time.LocalDate
 
-class BodyTrackRepository(
-    private val entryDao: EntryDao,
-    private val measurementValueDao: MeasurementValueDao
-) {
+class BodyTrackRepository(private val database: BodyTrackDatabase) {
+
+    private val entryDao = database.entryDao()
+    private val measurementValueDao = database.measurementValueDao()
+
+    /** Thrown when an update would move an entry onto a date that another entry occupies. */
+    class DateConflictException(val conflictingEntryId: Long) : Exception()
+
+    data class ImportStats(val inserted: Int, val overwritten: Int, val skipped: Int)
 
     fun getAllEntriesFlow(): Flow<List<BodyEntry>> {
-        return entryDao.getAllEntriesFlow().map { entities ->
-            mapEntitiesToBodyEntries(entities)
-        }
+        return entryDao.getAllWithValuesDescFlow().map { list -> list.map(Converters::toBodyEntry) }
     }
 
     fun getAllEntriesAscFlow(): Flow<List<BodyEntry>> {
-        return entryDao.getAllEntriesAscFlow().map { entities ->
-            mapEntitiesToBodyEntries(entities)
-        }
-    }
-
-    fun getEntriesFromDate(startDate: LocalDate): Flow<List<BodyEntry>> {
-        val startMillis = DateUtils.localDateToEpochMilli(startDate)
-        return entryDao.getEntriesFromDate(startMillis).map { entities ->
-            mapEntitiesToBodyEntries(entities)
-        }
+        return entryDao.getAllWithValuesAscFlow().map { list -> list.map(Converters::toBodyEntry) }
     }
 
     fun getDistinctMeasurementTypes(): Flow<List<MeasurementType>> {
         return measurementValueDao.getDistinctTypes().map { typeStrings ->
             typeStrings.mapNotNull { name ->
-                try { MeasurementType.valueOf(name) } catch (_: Exception) { null }
+                try { MeasurementType.valueOf(name) } catch (_: IllegalArgumentException) { null }
             }.sortedBy { it.sortOrder }
         }
     }
 
     suspend fun getEntryByDate(date: LocalDate): BodyEntry? {
-        val millis = DateUtils.localDateToEpochMilli(date)
-        val entity = entryDao.getByDate(millis) ?: return null
-        val values = measurementValueDao.getByEntryId(entity.id)
-        return Converters.toBodyEntry(entity, values)
+        return entryDao.getWithValuesByDate(DateUtils.localDateToEpochDay(date))
+            ?.let(Converters::toBodyEntry)
     }
 
     suspend fun getEntryById(id: Long): BodyEntry? {
-        val entity = entryDao.getById(id) ?: return null
-        val values = measurementValueDao.getByEntryId(entity.id)
-        return Converters.toBodyEntry(entity, values)
+        return entryDao.getWithValuesById(id)?.let(Converters::toBodyEntry)
     }
 
     suspend fun getLatestEntry(): BodyEntry? {
-        val entity = entryDao.getLatestEntry() ?: return null
-        val values = measurementValueDao.getByEntryId(entity.id)
-        return Converters.toBodyEntry(entity, values)
+        return entryDao.getLatestWithValues()?.let(Converters::toBodyEntry)
     }
 
-    suspend fun saveEntry(entry: BodyEntry): Long {
-        val now = DateUtils.now()
-        val dateMillis = DateUtils.localDateToEpochMilli(entry.date)
+    /** Latest entry strictly before [date]; used for the weight-deviation warning. */
+    suspend fun getEntryBefore(date: LocalDate): BodyEntry? {
+        return entryDao.getWithValuesBefore(DateUtils.localDateToEpochDay(date))
+            ?.let(Converters::toBodyEntry)
+    }
 
-        // Check if entry for this date already exists
-        val existing = entryDao.getByDate(dateMillis)
+    /** Inserts the entry, or overwrites the entry already stored for the same date. */
+    suspend fun saveEntry(entry: BodyEntry): Long = database.withTransaction {
+        writeAtDate(entry.date, entry.measurements)
+    }
 
-        val entryId: Long
-        if (existing != null) {
-            // Update existing entry
-            entryDao.update(existing.copy(updatedAt = now))
-            entryId = existing.id
-            measurementValueDao.deleteByEntryId(entryId)
-        } else {
-            // Create new entry
-            val newEntity = EntryEntity(
-                date = dateMillis,
-                createdAt = now,
-                updatedAt = now
-            )
-            entryId = entryDao.insert(newEntity)
+    /**
+     * Updates an existing entry, potentially moving it to a new date. Throws
+     * [DateConflictException] if another entry occupies the target date — callers
+     * resolve that via merge ([mergeEntries]) after asking the user.
+     */
+    suspend fun updateEntry(entry: BodyEntry): Long = database.withTransaction {
+        val existing = entryDao.getWithValuesById(entry.id)?.entry
+            ?: return@withTransaction writeAtDate(entry.date, entry.measurements)
+
+        val epochDay = DateUtils.localDateToEpochDay(entry.date)
+        val conflict = entryDao.getByDate(epochDay)
+        if (conflict != null && conflict.id != entry.id) {
+            throw DateConflictException(conflict.id)
         }
 
-        // Recalculate dependent values if weight changed
-        val weightValue = entry.measurements[MeasurementType.WEIGHT]
-        val weightKg = weightValue?.valueKg ?: 0.0
-
-        val processedMeasurements = entry.measurements.map { (type, value) ->
-            if (type == MeasurementType.WEIGHT) {
-                type to value
-            } else {
-                type to CalculationUtils.recalculateOnWeightChange(value, type, weightKg)
-            }
-        }.toMap()
-
-        val valueEntities = Converters.toMeasurementValueEntities(entryId, processedMeasurements)
-        measurementValueDao.insertAll(valueEntities)
-
-        return entryId
+        entryDao.update(existing.copy(date = epochDay, updatedAt = DateUtils.now()))
+        measurementValueDao.deleteByEntryId(entry.id)
+        measurementValueDao.insertAll(
+            Converters.toMeasurementValueEntities(entry.id, processMeasurements(entry.measurements))
+        )
+        entry.id
     }
 
-    suspend fun updateEntry(entry: BodyEntry): Long {
-        val now = DateUtils.now()
-        val dateMillis = DateUtils.localDateToEpochMilli(entry.date)
-
-        val existingEntity = entryDao.getById(entry.id)
-        if (existingEntity != null) {
-            // Check if date changed and if there's a conflict
-            if (existingEntity.date != dateMillis) {
-                val dateConflict = entryDao.getByDate(dateMillis)
-                if (dateConflict != null && dateConflict.id != entry.id) {
-                    // Delete the conflicting entry, we'll overwrite
-                    entryDao.deleteById(dateConflict.id)
-                }
+    /**
+     * Resolves a date conflict: deletes [obsoleteEntryId] and stores [merged]
+     * (typically built from both entries with user-chosen values) in its place.
+     */
+    suspend fun mergeEntries(merged: BodyEntry, obsoleteEntryId: Long): Long =
+        database.withTransaction {
+            entryDao.deleteById(obsoleteEntryId)
+            if (merged.id != 0L && merged.id != obsoleteEntryId) {
+                updateExisting(merged)
+            } else {
+                writeAtDate(merged.date, merged.measurements)
             }
-            entryDao.update(existingEntity.copy(date = dateMillis, updatedAt = now))
-            measurementValueDao.deleteByEntryId(entry.id)
         }
-
-        val weightValue = entry.measurements[MeasurementType.WEIGHT]
-        val weightKg = weightValue?.valueKg ?: 0.0
-
-        val processedMeasurements = entry.measurements.map { (type, value) ->
-            if (type == MeasurementType.WEIGHT) {
-                type to value
-            } else {
-                type to CalculationUtils.recalculateOnWeightChange(value, type, weightKg)
-            }
-        }.toMap()
-
-        val valueEntities = Converters.toMeasurementValueEntities(entry.id, processedMeasurements)
-        measurementValueDao.insertAll(valueEntities)
-        return entry.id
-    }
 
     suspend fun deleteEntry(id: Long) {
         entryDao.deleteById(id)
     }
 
-    suspend fun restoreEntry(entry: BodyEntry): Long {
-        return saveEntry(entry)
-    }
+    suspend fun restoreEntry(entry: BodyEntry): Long = saveEntry(entry)
 
     suspend fun getAllEntriesForExport(): List<BodyEntry> {
-        val entities = entryDao.getAllEntriesAsc()
-        return mapEntitiesToBodyEntriesSuspend(entities)
+        return entryDao.getAllWithValuesAsc().map(Converters::toBodyEntry)
     }
 
-    private suspend fun mapEntitiesToBodyEntries(entities: List<EntryEntity>): List<BodyEntry> {
-        return mapEntitiesToBodyEntriesSuspend(entities)
+    suspend fun getExistingDates(): Set<LocalDate> {
+        return entryDao.getAllDates().mapTo(mutableSetOf(), DateUtils::epochDayToLocalDate)
     }
 
-    private suspend fun mapEntitiesToBodyEntriesSuspend(entities: List<EntryEntity>): List<BodyEntry> {
-        if (entities.isEmpty()) return emptyList()
-        val entryIds = entities.map { it.id }
-        val allValues = measurementValueDao.getByEntryIds(entryIds)
-        val valuesByEntry = allValues.groupBy { it.entryId }
-        return entities.map { entity ->
-            Converters.toBodyEntry(entity, valuesByEntry[entity.id] ?: emptyList())
+    suspend fun importEntries(
+        entries: List<BodyEntry>,
+        overwriteExisting: Boolean
+    ): ImportStats = database.withTransaction {
+        var inserted = 0
+        var overwritten = 0
+        var skipped = 0
+        for (entry in entries) {
+            val existing = entryDao.getByDate(DateUtils.localDateToEpochDay(entry.date))
+            if (existing != null && !overwriteExisting) {
+                skipped++
+                continue
+            }
+            writeAtDate(entry.date, entry.measurements)
+            if (existing != null) overwritten++ else inserted++
+        }
+        ImportStats(inserted, overwritten, skipped)
+    }
+
+    private suspend fun updateExisting(entry: BodyEntry): Long {
+        val existing = entryDao.getWithValuesById(entry.id)?.entry
+            ?: return writeAtDate(entry.date, entry.measurements)
+        entryDao.update(
+            existing.copy(date = DateUtils.localDateToEpochDay(entry.date), updatedAt = DateUtils.now())
+        )
+        measurementValueDao.deleteByEntryId(entry.id)
+        measurementValueDao.insertAll(
+            Converters.toMeasurementValueEntities(entry.id, processMeasurements(entry.measurements))
+        )
+        return entry.id
+    }
+
+    /** Core write path; must run inside a transaction. */
+    private suspend fun writeAtDate(
+        date: LocalDate,
+        measurements: Map<MeasurementType, MeasurementValue>
+    ): Long {
+        val now = DateUtils.now()
+        val epochDay = DateUtils.localDateToEpochDay(date)
+        val existing = entryDao.getByDate(epochDay)
+
+        val entryId: Long
+        if (existing != null) {
+            entryDao.update(existing.copy(updatedAt = now))
+            entryId = existing.id
+            measurementValueDao.deleteByEntryId(entryId)
+        } else {
+            entryId = entryDao.insert(EntryEntity(date = epochDay, createdAt = now, updatedAt = now))
+        }
+
+        measurementValueDao.insertAll(
+            Converters.toMeasurementValueEntities(entryId, processMeasurements(measurements))
+        )
+        return entryId
+    }
+
+    /** Keeps percent/kg values of dependent measurements consistent with the entry's weight. */
+    private fun processMeasurements(
+        measurements: Map<MeasurementType, MeasurementValue>
+    ): Map<MeasurementType, MeasurementValue> {
+        val weightKg = measurements[MeasurementType.WEIGHT]?.valueKg ?: 0.0
+        return measurements.mapValues { (type, value) ->
+            if (type == MeasurementType.WEIGHT) value
+            else CalculationUtils.recalculateOnWeightChange(value, type, weightKg)
         }
     }
 }

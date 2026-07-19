@@ -6,6 +6,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.project.myscale.R
 
 @Composable
 fun ConfirmDeleteDialog(
@@ -15,8 +17,8 @@ fun ConfirmDeleteDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Eintrag löschen") },
-        text = { Text("Eintrag vom $dateText wirklich löschen?") },
+        title = { Text(stringResource(R.string.delete_entry_title)) },
+        text = { Text(stringResource(R.string.delete_entry_message, dateText)) },
         confirmButton = {
             TextButton(
                 onClick = onConfirm,
@@ -24,12 +26,12 @@ fun ConfirmDeleteDialog(
                     contentColor = MaterialTheme.colorScheme.error
                 )
             ) {
-                Text("Löschen")
+                Text(stringResource(R.string.action_delete))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Abbrechen")
+                Text(stringResource(R.string.action_cancel))
             }
         }
     )

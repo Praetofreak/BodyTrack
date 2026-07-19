@@ -22,6 +22,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.project.myscale.R
 import com.project.myscale.util.DateUtils
 import java.time.LocalDate
 
@@ -41,11 +43,11 @@ fun DatePickerField(
             value = DateUtils.formatFullDate(selectedDate),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Datum") },
+            label = { Text(stringResource(R.string.date_label)) },
             trailingIcon = {
                 Icon(
                     imageVector = Icons.Rounded.CalendarToday,
-                    contentDescription = "Datum wählen"
+                    contentDescription = stringResource(R.string.date_pick)
                 )
             },
             modifier = Modifier.fillMaxWidth(),
@@ -66,12 +68,16 @@ fun DatePickerField(
     }
 
     if (showDatePicker) {
-        val todayMillis = DateUtils.localDateToEpochMilli(LocalDate.now())
+        // The Material DatePicker works entirely in UTC milliseconds
+        val todayUtcMillis = DateUtils.localDateToUtcMillis(LocalDate.now())
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = DateUtils.localDateToEpochMilli(selectedDate),
+            initialSelectedDateMillis = DateUtils.localDateToUtcMillis(selectedDate),
             selectableDates = object : SelectableDates {
                 override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                    return utcTimeMillis <= todayMillis + 86400000 // Allow today
+                    return utcTimeMillis <= todayUtcMillis
+                }
+                override fun isSelectableYear(year: Int): Boolean {
+                    return year <= LocalDate.now().year
                 }
             }
         )
@@ -81,16 +87,16 @@ fun DatePickerField(
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
-                        onDateSelected(DateUtils.epochMilliToLocalDate(millis))
+                        onDateSelected(DateUtils.utcMillisToLocalDate(millis))
                     }
                     showDatePicker = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Abbrechen")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         ) {

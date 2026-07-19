@@ -1,6 +1,6 @@
 package com.project.myscale.util
 
-import com.project.myscale.data.local.database.entity.EntryEntity
+import com.project.myscale.data.local.database.entity.EntryWithValues
 import com.project.myscale.data.local.database.entity.MeasurementValueEntity
 import com.project.myscale.data.model.BodyEntry
 import com.project.myscale.data.model.InputMode
@@ -9,20 +9,17 @@ import com.project.myscale.data.model.MeasurementValue
 
 object Converters {
 
-    fun toBodyEntry(
-        entity: EntryEntity,
-        valueEntities: List<MeasurementValueEntity>
-    ): BodyEntry {
+    fun toBodyEntry(entryWithValues: EntryWithValues): BodyEntry {
         val measurements = mutableMapOf<MeasurementType, MeasurementValue>()
-        for (ve in valueEntities) {
+        for (ve in entryWithValues.values) {
             val type = try {
                 MeasurementType.valueOf(ve.type)
-            } catch (_: Exception) {
+            } catch (_: IllegalArgumentException) {
                 continue
             }
             val mode = try {
                 InputMode.valueOf(ve.inputMode)
-            } catch (_: Exception) {
+            } catch (_: IllegalArgumentException) {
                 InputMode.KG
             }
             measurements[type] = MeasurementValue(
@@ -32,19 +29,9 @@ object Converters {
             )
         }
         return BodyEntry(
-            id = entity.id,
-            date = DateUtils.epochMilliToLocalDate(entity.date),
+            id = entryWithValues.entry.id,
+            date = DateUtils.epochDayToLocalDate(entryWithValues.entry.date),
             measurements = measurements
-        )
-    }
-
-    fun toEntryEntity(entry: BodyEntry, existingId: Long? = null): EntryEntity {
-        val now = DateUtils.now()
-        return EntryEntity(
-            id = existingId ?: entry.id,
-            date = DateUtils.localDateToEpochMilli(entry.date),
-            createdAt = if (existingId != null) now else now,
-            updatedAt = now
         )
     }
 

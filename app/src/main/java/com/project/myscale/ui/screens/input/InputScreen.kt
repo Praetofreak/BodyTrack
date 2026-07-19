@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -23,12 +22,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.project.myscale.data.model.MeasurementType
+import com.project.myscale.R
 import com.project.myscale.ui.components.DatePickerField
 import com.project.myscale.ui.components.MeasurementInputField
 import com.project.myscale.ui.components.WeightInputField
+import com.project.myscale.util.DateUtils
 
 @Composable
 fun InputScreen(
@@ -37,16 +39,23 @@ fun InputScreen(
     viewModel: InputViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val enabledFields by viewModel.enabledInputFields.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is InputEvent.SaveSuccess -> {
-                    snackbarHostState.showSnackbar("Eintrag für ${event.dateText} gespeichert")
+                    snackbarHostState.showSnackbar(
+                        context.getString(
+                            R.string.save_success,
+                            DateUtils.formatShortDate(event.date)
+                        )
+                    )
                 }
                 is InputEvent.Error -> {
-                    snackbarHostState.showSnackbar(event.message)
+                    snackbarHostState.showSnackbar(
+                        context.getString(R.string.error_saving, event.detail ?: "")
+                    )
                 }
             }
         }
@@ -69,8 +78,8 @@ fun InputScreen(
                 WeightInputField(
                     value = uiState.weightInput,
                     onValueChange = { viewModel.onWeightChanged(it) },
-                    errorMessage = uiState.weightError,
-                    warningMessage = uiState.weightWarning
+                    error = uiState.weightError,
+                    showDeviationWarning = uiState.showWeightDeviationWarning
                 )
             }
         }
@@ -82,7 +91,7 @@ fun InputScreen(
         if (optionalTypes.isEmpty()) {
             TextButton(onClick = onNavigateToSettings) {
                 Text(
-                    "Du kannst in den Einstellungen weitere Messwerte aktivieren \u2192",
+                    stringResource(R.string.input_enable_more_fields),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -96,14 +105,14 @@ fun InputScreen(
                     onValueChange = { viewModel.onFieldValueChanged(type, it) },
                     inputMode = fieldState.inputMode,
                     onInputModeChange = { viewModel.onFieldModeChanged(type, it) },
-                    errorMessage = fieldState.error
+                    error = fieldState.error
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
 
         // Plausibility warning
-        AnimatedVisibility(visible = uiState.plausibilityWarning != null) {
+        AnimatedVisibility(visible = uiState.showPercentSumWarning) {
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
@@ -111,7 +120,7 @@ fun InputScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = uiState.plausibilityWarning ?: "",
+                    text = stringResource(R.string.warning_percent_sum),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onErrorContainer,
                     modifier = Modifier.padding(12.dp)
@@ -127,7 +136,7 @@ fun InputScreen(
             onDateSelected = { viewModel.onDateSelected(it) }
         )
 
-        // Existing entry banner
+        // Existing entry banner (values are already prefilled into the form)
         AnimatedVisibility(visible = uiState.existingEntryForDate != null) {
             Card(
                 colors = CardDefaults.cardColors(
@@ -137,16 +146,12 @@ fun InputScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        "Für dieses Datum existiert bereits ein Eintrag. Die Werte werden überschrieben.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                    TextButton(onClick = { viewModel.loadExistingEntry() }) {
-                        Text("Bestehenden Eintrag laden")
-                    }
-                }
+                Text(
+                    text = stringResource(R.string.input_editing_existing_entry),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.padding(12.dp)
+                )
             }
         }
 
@@ -167,7 +172,7 @@ fun InputScreen(
                     strokeWidth = 2.dp
                 )
             } else {
-                Text("Eintrag speichern", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.action_save_entry), style = MaterialTheme.typography.titleSmall)
             }
         }
 

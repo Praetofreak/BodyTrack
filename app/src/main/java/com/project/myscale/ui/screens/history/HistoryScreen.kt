@@ -27,8 +27,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.project.myscale.R
 import com.project.myscale.data.model.InputMode
 import com.project.myscale.data.model.ThemeOption
 import com.project.myscale.ui.components.ConfirmDeleteDialog
@@ -48,14 +51,15 @@ fun HistoryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isDarkTheme = themeOption.isDark
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is HistoryEvent.EntryDeleted -> {
                     val result = snackbarHostState.showSnackbar(
-                        message = "Eintrag gelöscht",
-                        actionLabel = "Rückgängig",
+                        message = context.getString(R.string.entry_deleted),
+                        actionLabel = context.getString(R.string.action_undo),
                         duration = SnackbarDuration.Short
                     )
                     if (result == SnackbarResult.ActionPerformed) {
@@ -63,7 +67,9 @@ fun HistoryScreen(
                     }
                 }
                 is HistoryEvent.Error -> {
-                    snackbarHostState.showSnackbar(event.message)
+                    snackbarHostState.showSnackbar(
+                        context.getString(R.string.error_generic, event.detail ?: "")
+                    )
                 }
             }
         }
@@ -80,8 +86,8 @@ fun HistoryScreen(
     if (uiState.allEntries.isEmpty()) {
         EmptyStateView(
             icon = Icons.AutoMirrored.Rounded.FormatListBulleted,
-            message = "Noch keine Einträge vorhanden",
-            actionText = "Ersten Eintrag erstellen",
+            message = stringResource(R.string.history_empty_state),
+            actionText = stringResource(R.string.history_create_first_entry),
             onAction = onNavigateToInput
         )
         return

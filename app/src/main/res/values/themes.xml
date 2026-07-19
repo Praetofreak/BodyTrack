@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.MyScale" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.MyScale" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.MyScale.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.MyScale</item>
+    </style>
 </resources>

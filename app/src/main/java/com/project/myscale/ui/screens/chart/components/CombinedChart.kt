@@ -25,8 +25,15 @@ import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 import com.project.myscale.data.model.BodyEntry
 import com.project.myscale.data.model.InputMode
 import com.project.myscale.data.model.MeasurementType
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import com.project.myscale.data.model.MeasurementValue
+import com.project.myscale.util.DateUtils
+
+/** One line per measurement type; only dates that actually have a value become points. */
+private data class ChartSeries(
+    val type: MeasurementType,
+    val x: List<Long>,
+    val y: List<Double>
+)
 
 @Composable
 fun CombinedChart(
@@ -38,30 +45,31 @@ fun CombinedChart(
 ) {
     if (entries.isEmpty() || activeTypes.isEmpty()) return
 
-    val sortedEntries = remember(entries) { entries.sortedBy { it.date } }
-
-    val typesWithData = remember(sortedEntries, activeTypes, displayMode) {
-        activeTypes.filter { type ->
-            if (displayMode == InputMode.PERCENT && !type.supportsPercent) return@filter false
-            sortedEntries.any { entry ->
-                val value = entry.measurements[type]
-                value != null && getDisplayValue(value, type, displayMode) != null
+    val seriesList = remember(entries, activeTypes, displayMode) {
+        val sorted = entries.sortedBy { it.date }
+        activeTypes
+            .filter { type -> !(displayMode == InputMode.PERCENT && !type.supportsPercent) }
+            .sortedBy { it.sortOrder }
+            .mapNotNull { type ->
+                val points = sorted.mapNotNull { entry ->
+                    val value = entry.measurements[type] ?: return@mapNotNull null
+                    val displayValue = getDisplayValue(value, type, displayMode)
+                        ?: return@mapNotNull null
+                    DateUtils.localDateToEpochDay(entry.date) to displayValue
+                }
+                if (points.isEmpty()) null
+                else ChartSeries(type, points.map { it.first }, points.map { it.second })
             }
-        }.sortedBy { it.sortOrder }
     }
 
-    if (typesWithData.isEmpty()) return
+    if (seriesList.isEmpty()) return
 
-    // Wrap the chart in a key block so the entire Vico chart subtree is fully
-    // recreated whenever the set of visible types or the entry set changes.
-    // This avoids any inconsistency between the chart's line configuration and
-    // the underlying CartesianChartModelProducer when the user switches time
-    // ranges (which previously caused IndexOutOfBoundsException crashes).
-    key(typesWithData, sortedEntries, displayMode, isDarkTheme) {
+    // Recreate the whole Vico subtree when the visible series change so the line
+    // configuration can never run ahead of the model producer's data (the
+    // mismatch used to crash with IndexOutOfBoundsException on range switches).
+    key(seriesList, isDarkTheme) {
         CombinedChartContent(
-            sortedEntries = sortedEntries,
-            typesWithData = typesWithData,
-            displayMode = displayMode,
+            seriesList = seriesList,
             isDarkTheme = isDarkTheme,
             modifier = modifier
         )
@@ -70,51 +78,33 @@ fun CombinedChart(
 
 @Composable
 private fun CombinedChartContent(
-    sortedEntries: List<BodyEntry>,
-    typesWithData: List<MeasurementType>,
-    displayMode: InputMode,
+    seriesList: List<ChartSeries>,
     isDarkTheme: Boolean,
     modifier: Modifier
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
 
-    val lineColors = remember(typesWithData, isDarkTheme) {
-        typesWithData.map { it.chartColor(isDarkTheme) }
-    }
-
-    val dateLabels = remember(sortedEntries) {
-        val formatter = DateTimeFormatter.ofPattern("d. MMM", Locale.GERMAN)
-        sortedEntries.mapIndexed { index, entry -> index to entry.date.format(formatter) }.toMap()
-    }
-
     LaunchedEffect(Unit) {
-        if (typesWithData.isEmpty() || sortedEntries.isEmpty()) return@LaunchedEffect
-
         modelProducer.runTransaction {
             lineSeries {
-                for (type in typesWithData) {
-                    val values = sortedEntries.map { entry ->
-                        val mv = entry.measurements[type]
-                        if (mv != null) {
-                            getDisplayValue(mv, type, displayMode) ?: 0.0
-                        } else {
-                            0.0
-                        }
-                    }
-                    series(values)
+                for (s in seriesList) {
+                    series(x = s.x, y = s.y)
                 }
             }
         }
     }
 
-    val lines = lineColors.map { color ->
+    val lines = seriesList.map { s ->
+        val color = s.type.chartColor(isDarkTheme)
         LineCartesianLayer.rememberLine(
             fill = remember(color) { LineCartesianLayer.LineFill.single(fill(color)) }
         )
     }
 
-    val bottomFormatter = CartesianValueFormatter { _, x, _ ->
-        dateLabels[x.toInt()] ?: ""
+    val bottomFormatter = remember {
+        CartesianValueFormatter { _, x, _ ->
+            DateUtils.formatChartDate(DateUtils.epochDayToLocalDate(x.toLong()))
+        }
     }
 
     CartesianChartHost(
@@ -136,7 +126,7 @@ private fun CombinedChartContent(
 }
 
 private fun getDisplayValue(
-    mv: com.project.myscale.data.model.MeasurementValue,
+    mv: MeasurementValue,
     type: MeasurementType,
     displayMode: InputMode
 ): Double? {

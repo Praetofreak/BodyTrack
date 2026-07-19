@@ -12,10 +12,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.project.myscale.R
 import com.project.myscale.data.model.InputMode
 import com.project.myscale.data.model.MeasurementType
+import com.project.myscale.util.Validators.ValidationError
 
 @Composable
 fun MeasurementInputField(
@@ -24,7 +27,7 @@ fun MeasurementInputField(
     onValueChange: (String) -> Unit,
     inputMode: InputMode,
     onInputModeChange: (InputMode) -> Unit,
-    errorMessage: String?,
+    error: ValidationError?,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -41,7 +44,7 @@ fun MeasurementInputField(
                         onValueChange(filtered)
                     }
                 },
-                label = { Text(type.labelDe) },
+                label = { Text(stringResource(type.labelRes)) },
                 suffix = {
                     Text(
                         if (inputMode == InputMode.KG) type.unitPrimary
@@ -49,9 +52,9 @@ fun MeasurementInputField(
                     )
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                isError = errorMessage != null,
-                supportingText = if (errorMessage != null) {
-                    { Text(errorMessage, color = MaterialTheme.colorScheme.error) }
+                isError = error != null,
+                supportingText = if (error != null) {
+                    { Text(stringResource(error.messageRes()), color = MaterialTheme.colorScheme.error) }
                 } else null,
                 singleLine = true,
                 modifier = Modifier.weight(1f)
@@ -72,8 +75,8 @@ fun MeasurementInputField(
 fun WeightInputField(
     value: String,
     onValueChange: (String) -> Unit,
-    errorMessage: String?,
-    warningMessage: String?,
+    error: ValidationError?,
+    showDeviationWarning: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -85,16 +88,16 @@ fun WeightInputField(
                     onValueChange(filtered)
                 }
             },
-            label = { Text("Gewicht") },
+            label = { Text(stringResource(R.string.measurement_weight)) },
             suffix = { Text("kg") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            isError = errorMessage != null,
-            supportingText = if (errorMessage != null) {
-                { Text(errorMessage, color = MaterialTheme.colorScheme.error) }
-            } else if (warningMessage != null) {
+            isError = error != null,
+            supportingText = if (error != null) {
+                { Text(stringResource(error.messageRes()), color = MaterialTheme.colorScheme.error) }
+            } else if (showDeviationWarning) {
                 {
                     Text(
-                        warningMessage,
+                        stringResource(R.string.warning_weight_deviation),
                         color = MaterialTheme.colorScheme.tertiary
                     )
                 }

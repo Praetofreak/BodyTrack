@@ -1,10 +1,9 @@
 package com.project.myscale
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.Crossfade
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -26,6 +25,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -36,117 +37,127 @@ import com.project.myscale.ui.navigation.Screen
 import com.project.myscale.ui.navigation.bottomNavItems
 import com.project.myscale.ui.theme.BodyTrackTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         val app = application as BodyTrackApplication
         val preferencesManager = app.preferencesManager
 
+        var preferencesLoaded = false
+        // Hold the splash until DataStore has answered, so users never see the
+        // wrong start screen flash (main UI before onboarding or vice versa).
+        splashScreen.setKeepOnScreenCondition { !preferencesLoaded }
+
         setContent {
             val themeOption by preferencesManager.selectedTheme
                 .collectAsState(initial = ThemeOption.FOREST)
             val onboardingCompleted by preferencesManager.onboardingCompleted
-                .collectAsState(initial = true)
+                .collectAsState(initial = null)
             val enabledFields by preferencesManager.enabledInputFields
                 .collectAsState(initial = setOf("WEIGHT"))
 
-            Crossfade(targetState = themeOption, label = "theme_crossfade") { theme ->
-                BodyTrackTheme(themeOption = theme) {
-                    val navController = rememberNavController()
-                    val snackbarHostState = remember { SnackbarHostState() }
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentRoute = navBackStackEntry?.destination?.route
+            val onboardingState = onboardingCompleted ?: return@setContent
+            preferencesLoaded = true
 
-                    val showBottomBar = currentRoute in listOf(
-                        Screen.Input.route,
-                        Screen.Chart.route,
-                        Screen.History.route
-                    )
-                    val showTopBar = currentRoute !in listOf(
-                        Screen.Onboarding.route,
-                        Screen.Settings.route,
-                        Screen.EditEntry.route
-                    )
+            BodyTrackTheme(themeOption = themeOption) {
+                val navController = rememberNavController()
+                val snackbarHostState = remember { SnackbarHostState() }
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
 
-                    val startDestination = if (onboardingCompleted) Screen.Input.route
-                    else Screen.Onboarding.route
+                val showBottomBar = currentRoute in listOf(
+                    Screen.Input.route,
+                    Screen.Chart.route,
+                    Screen.History.route
+                )
+                val showTopBar = currentRoute !in listOf(
+                    Screen.Onboarding.route,
+                    Screen.Settings.route,
+                    Screen.EditEntry.route
+                )
 
-                    Scaffold(
-                        modifier = Modifier.fillMaxSize(),
-                        topBar = {
-                            if (showTopBar) {
-                                TopAppBar(
-                                    title = {
-                                        Text(
-                                            "BodyTrack",
-                                            style = MaterialTheme.typography.headlineMedium
-                                        )
-                                    },
-                                    actions = {
-                                        IconButton(onClick = {
-                                            navController.navigate(Screen.Settings.route)
-                                        }) {
-                                            Icon(
-                                                Icons.Rounded.Settings,
-                                                contentDescription = "Einstellungen"
-                                            )
-                                        }
-                                    },
-                                    colors = TopAppBarDefaults.topAppBarColors(
-                                        containerColor = MaterialTheme.colorScheme.surface,
-                                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                val startDestination = if (onboardingState) Screen.Input.route
+                else Screen.Onboarding.route
+
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    topBar = {
+                        if (showTopBar) {
+                            TopAppBar(
+                                title = {
+                                    Text(
+                                        stringResource(R.string.app_name),
+                                        style = MaterialTheme.typography.headlineMedium
                                     )
-                                )
-                            }
-                        },
-                        bottomBar = {
-                            if (showBottomBar) {
-                                NavigationBar {
-                                    bottomNavItems.forEach { item ->
-                                        val selected = navBackStackEntry?.destination?.hierarchy
-                                            ?.any { it.route == item.route } == true
-
-                                        NavigationBarItem(
-                                            icon = {
-                                                Icon(item.icon, contentDescription = item.label)
-                                            },
-                                            label = { Text(item.label) },
-                                            selected = selected,
-                                            onClick = {
-                                                navController.navigate(item.route) {
-                                                    popUpTo(navController.graph.findStartDestination().id) {
-                                                        saveState = true
-                                                    }
-                                                    launchSingleTop = true
-                                                    restoreState = true
-                                                }
-                                            },
-                                            colors = NavigationBarItemDefaults.colors(
-                                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                                selectedTextColor = MaterialTheme.colorScheme.primary,
-                                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
+                                },
+                                actions = {
+                                    IconButton(onClick = {
+                                        navController.navigate(Screen.Settings.route)
+                                    }) {
+                                        Icon(
+                                            Icons.Rounded.Settings,
+                                            contentDescription = stringResource(R.string.settings_title)
                                         )
                                     }
+                                },
+                                colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                        }
+                    },
+                    bottomBar = {
+                        if (showBottomBar) {
+                            NavigationBar {
+                                bottomNavItems.forEach { item ->
+                                    val selected = navBackStackEntry?.destination?.hierarchy
+                                        ?.any { it.route == item.route } == true
+
+                                    NavigationBarItem(
+                                        icon = {
+                                            Icon(
+                                                item.icon,
+                                                contentDescription = stringResource(item.labelRes)
+                                            )
+                                        },
+                                        label = { Text(stringResource(item.labelRes)) },
+                                        selected = selected,
+                                        onClick = {
+                                            navController.navigate(item.route) {
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
+                                        },
+                                        colors = NavigationBarItemDefaults.colors(
+                                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    )
                                 }
                             }
-                        },
-                        snackbarHost = { SnackbarHost(snackbarHostState) }
-                    ) { innerPadding ->
-                        NavGraph(
-                            navController = navController,
-                            startDestination = startDestination,
-                            themeOption = theme,
-                            enabledFields = enabledFields,
-                            snackbarHostState = snackbarHostState,
-                            modifier = Modifier.padding(innerPadding)
-                        )
-                    }
+                        }
+                    },
+                    snackbarHost = { SnackbarHost(snackbarHostState) }
+                ) { innerPadding ->
+                    NavGraph(
+                        navController = navController,
+                        startDestination = startDestination,
+                        themeOption = themeOption,
+                        enabledFields = enabledFields,
+                        snackbarHostState = snackbarHostState,
+                        modifier = Modifier.padding(innerPadding)
+                    )
                 }
             }
         }

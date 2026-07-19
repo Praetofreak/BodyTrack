@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.project.myscale.data.model.BackupInterval
 import com.project.myscale.data.model.InputMode
 import com.project.myscale.data.model.MeasurementType
 import com.project.myscale.data.model.ThemeOption
@@ -24,6 +25,8 @@ class UserPreferencesManager(private val context: Context) {
         val DEFAULT_INPUT_MODE = stringPreferencesKey("default_input_mode")
         val CHART_DISPLAY_MODE = stringPreferencesKey("chart_display_mode")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val BACKUP_FOLDER_URI = stringPreferencesKey("backup_folder_uri")
+        val BACKUP_INTERVAL = stringPreferencesKey("backup_interval")
     }
 
     val enabledInputFields: Flow<Set<String>> = context.dataStore.data.map { prefs ->
@@ -88,6 +91,32 @@ class UserPreferencesManager(private val context: Context) {
     suspend fun setOnboardingCompleted(completed: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[Keys.ONBOARDING_COMPLETED] = completed
+        }
+    }
+
+    val backupFolderUri: Flow<String?> = context.dataStore.data.map { prefs ->
+        prefs[Keys.BACKUP_FOLDER_URI]
+    }
+
+    val backupInterval: Flow<BackupInterval> = context.dataStore.data.map { prefs ->
+        val name = prefs[Keys.BACKUP_INTERVAL] ?: BackupInterval.OFF.name
+        try {
+            BackupInterval.valueOf(name)
+        } catch (_: IllegalArgumentException) {
+            BackupInterval.OFF
+        }
+    }
+
+    suspend fun setBackupFolderUri(uri: String?) {
+        context.dataStore.edit { prefs ->
+            if (uri == null) prefs.remove(Keys.BACKUP_FOLDER_URI)
+            else prefs[Keys.BACKUP_FOLDER_URI] = uri
+        }
+    }
+
+    suspend fun setBackupInterval(interval: BackupInterval) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.BACKUP_INTERVAL] = interval.name
         }
     }
 }

@@ -1,9 +1,6 @@
 package com.project.myscale.ui.screens.chart
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,8 +23,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.project.myscale.R
 import com.project.myscale.data.model.InputMode
 import com.project.myscale.data.model.ThemeOption
 import com.project.myscale.ui.components.EmptyStateView
@@ -48,7 +47,7 @@ fun ChartScreen(
     if (uiState.allEntries.isEmpty()) {
         EmptyStateView(
             icon = Icons.AutoMirrored.Rounded.ShowChart,
-            message = "Noch keine Daten vorhanden.\nErstelle zuerst einen Eintrag."
+            message = stringResource(R.string.chart_empty_state)
         )
         return
     }
@@ -79,7 +78,7 @@ fun ChartScreen(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Gesamt")
+                Text(stringResource(R.string.chart_mode_combined))
             }
             OutlinedButton(
                 onClick = { viewModel.setViewMode(ChartViewMode.INDIVIDUAL) },
@@ -93,7 +92,7 @@ fun ChartScreen(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Einzeln")
+                Text(stringResource(R.string.chart_mode_individual))
             }
         }
 
@@ -159,7 +158,7 @@ fun ChartScreen(
         // Charts
         if (uiState.filteredEntries.isEmpty()) {
             Text(
-                text = "Keine Daten in diesem Zeitraum",
+                text = stringResource(R.string.chart_no_data_in_range),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 32.dp)
@@ -179,18 +178,12 @@ fun ChartScreen(
                         ChartViewMode.INDIVIDUAL -> {
                             uiState.activeTypes.sortedBy { it.sortOrder }.forEach { type ->
                                 if (uiState.displayMode == InputMode.PERCENT && !type.supportsPercent) return@forEach
-                                AnimatedVisibility(
-                                    visible = true,
-                                    enter = expandVertically(),
-                                    exit = shrinkVertically()
-                                ) {
-                                    SingleValueChart(
-                                        type = type,
-                                        entries = uiState.filteredEntries,
-                                        displayMode = uiState.displayMode,
-                                        isDarkTheme = isDarkTheme
-                                    )
-                                }
+                                SingleValueChart(
+                                    type = type,
+                                    entries = uiState.filteredEntries,
+                                    displayMode = uiState.displayMode,
+                                    isDarkTheme = isDarkTheme
+                                )
                                 Spacer(modifier = Modifier.height(12.dp))
                             }
                         }

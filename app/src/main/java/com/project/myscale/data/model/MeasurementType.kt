@@ -1,9 +1,12 @@
 package com.project.myscale.data.model
 
+import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
+import com.project.myscale.R
 
 enum class MeasurementType(
-    val labelDe: String,
+    @param:StringRes val labelRes: Int,
+    val csvKey: String,
     val isPrimary: Boolean,
     val supportsPercent: Boolean,
     val defaultEnabled: Boolean,
@@ -15,7 +18,8 @@ enum class MeasurementType(
     val sortOrder: Int
 ) {
     WEIGHT(
-        labelDe = "Gewicht",
+        labelRes = R.string.measurement_weight,
+        csvKey = "weight",
         isPrimary = true,
         supportsPercent = false,
         defaultEnabled = true,
@@ -27,7 +31,8 @@ enum class MeasurementType(
         sortOrder = 0
     ),
     BODY_FAT(
-        labelDe = "Körperfett",
+        labelRes = R.string.measurement_body_fat,
+        csvKey = "body_fat",
         isPrimary = false,
         supportsPercent = true,
         defaultEnabled = false,
@@ -39,7 +44,8 @@ enum class MeasurementType(
         sortOrder = 1
     ),
     WATER(
-        labelDe = "Wasseranteil",
+        labelRes = R.string.measurement_water,
+        csvKey = "water",
         isPrimary = false,
         supportsPercent = true,
         defaultEnabled = false,
@@ -51,7 +57,8 @@ enum class MeasurementType(
         sortOrder = 2
     ),
     MUSCLE(
-        labelDe = "Muskelanteil",
+        labelRes = R.string.measurement_muscle,
+        csvKey = "muscle",
         isPrimary = false,
         supportsPercent = true,
         defaultEnabled = false,
@@ -63,7 +70,8 @@ enum class MeasurementType(
         sortOrder = 3
     ),
     BONE_MASS(
-        labelDe = "Knochenmasse",
+        labelRes = R.string.measurement_bone_mass,
+        csvKey = "bone_mass",
         isPrimary = false,
         supportsPercent = true,
         defaultEnabled = false,

@@ -17,10 +17,7 @@ class BodyTrackApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         database = BodyTrackDatabase.getInstance(this)
-        repository = BodyTrackRepository(
-            entryDao = database.entryDao(),
-            measurementValueDao = database.measurementValueDao()
-        )
+        repository = BodyTrackRepository(database)
         preferencesManager = UserPreferencesManager(this)
     }
 }

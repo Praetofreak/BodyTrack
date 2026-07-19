@@ -33,31 +33,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.annotation.StringRes
 import com.project.myscale.BodyTrackApplication
+import com.project.myscale.R
 import kotlinx.coroutines.launch
 
 data class OnboardingPage(
-    val title: String,
-    val description: String,
+    @param:StringRes val titleRes: Int,
+    @param:StringRes val descriptionRes: Int,
     val icons: List<ImageVector>
 )
 
 private val pages = listOf(
     OnboardingPage(
-        title = "Willkommen bei BodyTrack",
-        description = "Verfolge dein Gewicht und deine Körperwerte einfach und übersichtlich.",
+        titleRes = R.string.onboarding_title_1,
+        descriptionRes = R.string.onboarding_desc_1,
         icons = listOf(Icons.Rounded.MonitorWeight, Icons.AutoMirrored.Rounded.TrendingUp)
     ),
     OnboardingPage(
-        title = "Deine Fortschritte im Blick",
-        description = "Sieh deine Entwicklung als Diagramm. Wechsle zwischen Gesamtübersicht und Einzelansichten.",
+        titleRes = R.string.onboarding_title_2,
+        descriptionRes = R.string.onboarding_desc_2,
         icons = listOf(Icons.AutoMirrored.Rounded.ShowChart)
     ),
     OnboardingPage(
-        title = "Personalisiere deine App",
-        description = "Wähle in den Einstellungen aus, welche Messwerte du erfassen möchtest, und passe das Farbthema an.",
+        titleRes = R.string.onboarding_title_3,
+        descriptionRes = R.string.onboarding_desc_3,
         icons = listOf(Icons.Rounded.Settings)
     )
 )
@@ -92,7 +95,7 @@ fun OnboardingScreen(
         ) {
             if (pagerState.currentPage < pages.size - 1) {
                 TextButton(onClick = completeOnboarding) {
-                    Text("Überspringen")
+                    Text(stringResource(R.string.onboarding_skip))
                 }
             }
         }
@@ -138,7 +141,7 @@ fun OnboardingScreen(
                     .height(56.dp),
                 shape = MaterialTheme.shapes.large
             ) {
-                Text("Los geht's!", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.onboarding_start), style = MaterialTheme.typography.titleSmall)
             }
         } else {
             Button(
@@ -152,7 +155,7 @@ fun OnboardingScreen(
                     .height(56.dp),
                 shape = MaterialTheme.shapes.large
             ) {
-                Text("Weiter", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.onboarding_next), style = MaterialTheme.typography.titleSmall)
             }
         }
 
@@ -185,7 +188,7 @@ private fun OnboardingPageContent(page: OnboardingPage) {
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = page.title,
+            text = stringResource(page.titleRes),
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center
         )
@@ -193,7 +196,7 @@ private fun OnboardingPageContent(page: OnboardingPage) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = page.description,
+            text = stringResource(page.descriptionRes),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant

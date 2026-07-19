@@ -31,11 +31,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.project.myscale.data.model.BodyEntry
 import com.project.myscale.data.model.InputMode
 import com.project.myscale.data.model.MeasurementType
 import com.project.myscale.util.DateUtils
+import com.project.myscale.util.Formatters
 
 @Composable
 fun EntryCard(
@@ -125,7 +127,7 @@ fun EntryCard(
                     val weight = entry.measurements[MeasurementType.WEIGHT]
                     if (weight != null) {
                         Text(
-                            text = "${formatDisplayValue(weight.valueKg)} kg",
+                            text = Formatters.valueWithUnit(weight.valueKg, "kg"),
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -152,14 +154,14 @@ fun EntryCard(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = type.labelDe,
+                                text = stringResource(type.labelRes),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
                             val displayValue = when {
                                 displayMode == InputMode.PERCENT && type.supportsPercent && value.valuePercent != null ->
-                                    "${formatDisplayValue(value.valuePercent)} %"
-                                else -> "${formatDisplayValue(value.valueKg)} kg"
+                                    Formatters.valueWithUnit(value.valuePercent, "%")
+                                else -> Formatters.valueWithUnit(value.valueKg, "kg")
                             }
                             Text(
                                 text = displayValue,
@@ -171,13 +173,5 @@ fun EntryCard(
                 }
             }
         }
-    }
-}
-
-private fun formatDisplayValue(value: Double): String {
-    return if (value == value.toLong().toDouble()) {
-        value.toLong().toString()
-    } else {
-        String.format("%.1f", value)
     }
 }

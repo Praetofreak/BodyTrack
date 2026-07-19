@@ -1,3 +1,152 @@
 <resources>
-    <string name="app_name">MyScale</string>
+    <string name="app_name" translatable="false">DailyScale</string>
+
+    <!-- Measurement types -->
+    <string name="measurement_weight">Weight</string>
+    <string name="measurement_body_fat">Body fat</string>
+    <string name="measurement_water">Water</string>
+    <string name="measurement_muscle">Muscle</string>
+    <string name="measurement_bone_mass">Bone mass</string>
+
+    <!-- Navigation -->
+    <string name="nav_input">Entry</string>
+    <string name="nav_chart">Trends</string>
+    <string name="nav_history">History</string>
+
+    <!-- Common actions -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_back">Back</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_merge">Merge</string>
+    <string name="action_import">Import</string>
+    <string name="action_save_entry">Save entry</string>
+    <string name="action_save_changes">Save changes</string>
+    <string name="action_delete_entry">Delete entry</string>
+    <string name="action_export_csv">Export data (CSV)</string>
+    <string name="action_import_csv">Import data (CSV)</string>
+
+    <!-- Validation -->
+    <string name="error_weight_required">Weight is required</string>
+    <string name="error_invalid_number">Invalid input</string>
+    <string name="error_weight_out_of_range">Weight must be between 20 and 350 kg</string>
+    <string name="error_value_not_positive">Value must be greater than 0</string>
+    <string name="error_exceeds_total_weight">Cannot exceed the total weight</string>
+    <string name="error_percent_out_of_range" formatted="false">Please enter a value between 0.1% and 100%</string>
+    <string name="warning_weight_deviation">Large difference from the previous entry. Is the value correct?</string>
+    <string name="warning_percent_sum" formatted="false">The shares add up to more than 100%</string>
+
+    <!-- Input screen -->
+    <string name="input_enable_more_fields">You can enable more measurements in the settings →</string>
+    <string name="input_editing_existing_entry">An entry already exists for this date. Its values have been loaded — saving will update it.</string>
+    <string name="save_success">Entry for %1$s saved</string>
+    <string name="error_saving">Saving failed: %1$s</string>
+    <string name="error_generic">Something went wrong: %1$s</string>
+
+    <!-- Date picker -->
+    <string name="date_label">Date</string>
+    <string name="date_pick">Pick a date</string>
+
+    <!-- Delete dialog -->
+    <string name="delete_entry_title">Delete entry</string>
+    <string name="delete_entry_message">Really delete the entry from %1$s?</string>
+    <string name="entry_deleted">Entry deleted</string>
+
+    <!-- Merge dialog -->
+    <string name="merge_dialog_title">Merge entries</string>
+    <string name="merge_dialog_message">An entry already exists for %1$s. Values present in only one entry are kept automatically.</string>
+    <string name="merge_dialog_choose_values">For the following values, choose which one to keep:</string>
+    <string name="merge_option_edited">Edited entry</string>
+    <string name="merge_option_existing">Existing entry</string>
+
+    <!-- Edit screen -->
+    <string name="edit_entry_title">Edit entry</string>
+
+    <!-- Time ranges -->
+    <string name="range_one_week_short">1W</string>
+    <string name="range_one_month_short">1M</string>
+    <string name="range_three_months_short">3M</string>
+    <string name="range_six_months_short">6M</string>
+    <string name="range_one_year_short">1Y</string>
+    <string name="range_all">All</string>
+    <string name="range_one_week">1 week</string>
+    <string name="range_one_month">1 month</string>
+    <string name="range_three_months">3 months</string>
+    <string name="range_six_months">6 months</string>
+    <string name="range_one_year">1 year</string>
+    <string name="range_total">Total</string>
+
+    <!-- Chart screen -->
+    <string name="chart_empty_state">No data yet.\nCreate an entry first.</string>
+    <string name="chart_mode_combined">Combined</string>
+    <string name="chart_mode_individual">Individual</string>
+    <string name="chart_no_data_in_range">No data in this period</string>
+    <string name="development_title">Development (%1$s)</string>
+    <string name="development_single_value">Only one measurement</string>
+
+    <!-- History screen -->
+    <string name="history_empty_state">No entries yet</string>
+    <string name="history_create_first_entry">Create first entry</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_input_fields">Input fields</string>
+    <string name="settings_input_fields_desc">Choose which measurements you want to track. Weight is always on.</string>
+    <string name="settings_required_field">Required field</string>
+    <string name="settings_default_unit">Default unit for new entries</string>
+    <string name="unit_percent_full" formatted="false">Percent (%)</string>
+    <string name="unit_kg_full">Kilograms (kg)</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme_selected">Selected</string>
+    <string name="settings_language">Language</string>
+    <string name="language_system">System default</string>
+    <string name="language_english" translatable="false">English</string>
+    <string name="language_german" translatable="false">Deutsch</string>
+    <string name="language_french" translatable="false">Français</string>
+    <string name="settings_data">Data</string>
+    <string name="export_success">Data exported</string>
+    <string name="export_failed">Export failed: %1$s</string>
+    <string name="import_failed">Import failed: %1$s</string>
+    <string name="import_dialog_title">Import CSV</string>
+    <string name="import_dialog_summary">%1$d new entries, %2$d conflicts with existing entries.</string>
+    <string name="import_conflict_question">What should happen to conflicting dates?</string>
+    <string name="import_keep_existing">Keep existing entries</string>
+    <string name="import_overwrite">Use imported entries</string>
+    <string name="import_finished">Import finished: %1$d added, %2$d overwritten, %3$d skipped.</string>
+    <string name="import_finished_errors">%1$d rows could not be read.</string>
+    <string name="import_errors_title">%1$d rows with errors:</string>
+    <string name="import_error_line">Row %1$d: %2$s</string>
+    <string name="import_error_invalid_format">invalid format</string>
+    <string name="import_error_invalid_date">invalid date</string>
+    <string name="import_error_missing_weight">no weight given</string>
+    <string name="settings_backup">Local backup</string>
+    <string name="settings_backup_desc">Automatically saves a CSV backup into a folder of your choice — including cloud folders synced on this device (e.g. Nextcloud, Drive, Dropbox).</string>
+    <string name="backup_choose_folder">Choose backup folder</string>
+    <string name="backup_folder_current">Folder: %1$s</string>
+    <string name="backup_folder_none">No folder selected</string>
+    <string name="backup_interval_label">Automatic backup</string>
+    <string name="backup_interval_off">Off</string>
+    <string name="backup_interval_daily">Daily</string>
+    <string name="backup_interval_weekly">Weekly</string>
+    <string name="backup_interval_monthly">Monthly</string>
+    <string name="backup_now">Back up now</string>
+    <string name="backup_success">Backup saved</string>
+    <string name="backup_not_configured">Choose a backup folder first</string>
+    <string name="backup_folder_inaccessible">Backup folder is no longer accessible — please choose it again</string>
+    <string name="backup_failed">Backup failed</string>
+    <string name="settings_info">About</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_show_onboarding">Show introduction again</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Welcome to DailyScale</string>
+    <string name="onboarding_desc_1">Track your weight and body measurements simply and clearly.</string>
+    <string name="onboarding_title_2">Your progress at a glance</string>
+    <string name="onboarding_desc_2">See your development as a chart. Switch between the combined overview and individual views.</string>
+    <string name="onboarding_title_3">Make the app yours</string>
+    <string name="onboarding_desc_3">Choose in the settings which measurements you want to track, and pick a color theme.</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_start">Let\'s go!</string>
 </resources>
