@@ -10,7 +10,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.project.myscale"
+        applicationId = "io.github.praetofreak.dailyscale"
         minSdk = 26
         targetSdk = 37
         versionCode = 3
