@@ -78,8 +78,16 @@ class InputViewModel(application: Application) : AndroidViewModel(application) {
                 }.filter { !it.isPrimary }.sortedBy { it.sortOrder }
 
                 val currentStates = _uiState.value.fieldStates
-                val newStates = types.associateWith { type ->
-                    currentStates[type] ?: InputFieldState(inputMode = defaultMode)
+                val newStates = mutableMapOf<MeasurementType, InputFieldState>()
+                // Never drop entered or prefilled data, even for disabled types —
+                // otherwise saving would silently delete those measurements
+                for ((type, fs) in currentStates) {
+                    if (fs.value.isNotBlank()) newStates[type] = fs
+                }
+                for (type in types) {
+                    if (type !in newStates) {
+                        newStates[type] = currentStates[type] ?: InputFieldState(inputMode = defaultMode)
+                    }
                 }
                 _uiState.value = _uiState.value.copy(
                     enabledFields = types.toSet(),
@@ -100,7 +108,22 @@ class InputViewModel(application: Application) : AndroidViewModel(application) {
 
             if (existing != null) {
                 applyEntryToForm(date, existing)
+            } else if (_uiState.value.existingEntryForDate != null) {
+                // Leaving a prefilled date for an empty one: prefilled values
+                // belong to their date, so start with a blank form
+                _uiState.value = _uiState.value.copy(
+                    selectedDate = date,
+                    existingEntryForDate = null,
+                    weightInput = "",
+                    weightError = null,
+                    fieldStates = _uiState.value.enabledFields.associateWith {
+                        InputFieldState(inputMode = defaultMode)
+                    },
+                    showPercentSumWarning = false
+                )
+                refreshWeightDeviation()
             } else {
+                // Manually typed values carry over to the newly picked date
                 _uiState.value = _uiState.value.copy(
                     selectedDate = date,
                     existingEntryForDate = null

@@ -43,6 +43,7 @@ import com.project.myscale.data.model.BodyEntry
 import com.project.myscale.data.model.InputMode
 import com.project.myscale.data.model.MeasurementType
 import com.project.myscale.data.model.MeasurementValue
+import com.project.myscale.data.repository.BodyTrackRepository
 import com.project.myscale.ui.components.ConfirmDeleteDialog
 import com.project.myscale.ui.components.DatePickerField
 import com.project.myscale.ui.components.MeasurementInputField
@@ -341,6 +342,10 @@ fun EditEntryScreen(
                     scope.launch {
                         isSaving = true
                         try {
+                            performSave(buildMeasurements(weightKg))
+                        } catch (_: BodyTrackRepository.DateConflictException) {
+                            // Conflict appeared between pre-check and write (race):
+                            // re-running the save detects it and opens the merge dialog
                             performSave(buildMeasurements(weightKg))
                         } catch (e: Exception) {
                             snackbarHostState.showSnackbar(

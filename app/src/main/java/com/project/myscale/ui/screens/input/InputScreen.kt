@@ -86,8 +86,9 @@ fun InputScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Optional measurement fields
-        val optionalTypes = uiState.enabledFields.sortedBy { it.sortOrder }
+        // Optional measurement fields — render everything the form holds, incl.
+        // prefilled values of types that are disabled in the settings
+        val optionalTypes = uiState.fieldStates.keys.sortedBy { it.sortOrder }
         if (optionalTypes.isEmpty()) {
             TextButton(onClick = onNavigateToSettings) {
                 Text(
